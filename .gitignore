@@ -1,0 +1,17 @@
+.DS_Store
+
+# Python
+__pycache__/
+.venv/
+
+# SwiftPM / Xcode
+.build/
+.swiftpm/
+DerivedData/
+
+# App packaging output
+dist/
+
+# Local Overleaf projects (do NOT publish)
+overleaf-projects/
+
