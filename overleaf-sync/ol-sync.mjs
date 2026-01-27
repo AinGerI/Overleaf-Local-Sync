@@ -5,6 +5,7 @@ import {
   readFile,
   readdir,
   rename,
+  rm,
   stat,
   writeFile,
 } from 'node:fs/promises'
@@ -187,7 +188,7 @@ Usage:
   node overleaf-sync/ol-sync.mjs link --project-id <id> --dir <path> [--base-url ...] [--mongo-container mongo] [--container sharelatex] [--force]
   node overleaf-sync/ol-sync.mjs create --dir <path> [--name <projectName>] [--base-url ...] [--mongo-container mongo] [--force]
   node overleaf-sync/ol-sync.mjs pull --project-id <id> --dir <path> [--base-url ...] [--mongo-container mongo]
-  node overleaf-sync/ol-sync.mjs fetch --dir <path> [--project-id <id>] [--base-url ...] [--debug] [--json]
+  node overleaf-sync/ol-sync.mjs fetch --dir <path> [--project-id <id>] [--base-url ...] [--debug] [--json] [--skip-empty]
   node overleaf-sync/ol-sync.mjs apply --dir <path> [--project-id <id>] [--base-url ...] [--batch <batchId>]
   node overleaf-sync/ol-sync.mjs push --dir <path> [--project-id <id>] [--base-url ...] [--mongo-container mongo] [--concurrency 4] [--dry-run]
   node overleaf-sync/ol-sync.mjs watch --dir <path> [--project-id <id>] [--base-url ...] [--mongo-container mongo] [--dry-run]
@@ -1046,6 +1047,7 @@ async function cmdFetch({ baseUrl, projectId, dir, debug, json, authOpts }) {
   const { cfg } = await loadConfig(absDir)
   const effectiveBaseUrl = normalizeBaseUrl(cfg?.baseUrl || baseUrl)
   const effectiveProjectId = cfg?.projectId || projectId
+  const skipEmpty = Boolean(authOpts?.['skip-empty'])
 
   if (!effectiveProjectId) {
     throw new Error(
@@ -1080,22 +1082,40 @@ async function cmdFetch({ baseUrl, projectId, dir, debug, json, authOpts }) {
   const localIndex = await buildIndex(absDir)
   const changes = diffIndexes(localIndex, remoteIndex)
 
+  const isEmpty =
+    changes.added.length === 0 &&
+    changes.modified.length === 0 &&
+    changes.deleted.length === 0
+
   const manifest = {
     version: 1,
     baseUrl: effectiveBaseUrl,
     projectId: effectiveProjectId,
     batchId,
     localDir: absDir,
-    inboxDir: batchDir,
+    inboxDir: skipEmpty && isEmpty ? null : batchDir,
     createdAt: new Date().toISOString(),
     changes,
+    saved: !(skipEmpty && isEmpty),
   }
 
   const manifestPath = path.join(batchDir, '.ol-sync.inbox.json')
-  await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8')
+  if (!(skipEmpty && isEmpty)) {
+    await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8')
+  }
 
   if (json) {
     process.stdout.write(JSON.stringify(manifest) + '\n')
+    if (skipEmpty && isEmpty) {
+      // Best-effort cleanup of the batch directory; it was created just for diffing.
+      await rm(batchDir, { recursive: true, force: true })
+    }
+    return
+  }
+
+  if (skipEmpty && isEmpty) {
+    process.stdout.write('No remote changes.\n')
+    await rm(batchDir, { recursive: true, force: true })
     return
   }
 

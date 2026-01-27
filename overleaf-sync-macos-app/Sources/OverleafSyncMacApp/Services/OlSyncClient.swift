@@ -122,11 +122,14 @@ struct OlSyncClient {
   func fetch(
     baseURL: String,
     dir: URL,
+    skipEmpty: Bool = false,
     email: String? = nil,
     password: String? = nil
   ) async throws -> OlSyncInboxManifest {
+    var args = ["fetch", "--base-url", baseURL, "--dir", dir.path, "--json"]
+    if skipEmpty { args.append("--skip-empty") }
     let result = try await run(
-      args: ["fetch", "--base-url", baseURL, "--dir", dir.path, "--json"],
+      args: args,
       email: email,
       password: password
     )

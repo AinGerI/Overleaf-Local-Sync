@@ -5,27 +5,54 @@ struct WatchDetailView: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
-      if let w = model.selectedWatch {
+      if let watch = model.selectedWatch {
         HStack {
-          Text(w.dir.path)
+          Text(watch.dir.path)
             .lineLimit(1)
             .truncationMode(.middle)
           Spacer()
-          Button("Stop") { w.stop() }
-            .disabled(!w.isRunning)
+          Button("Stop") { watch.stop() }
+            .disabled(!watch.isRunning)
         }
 
         ScrollViewReader { proxy in
           ScrollView {
-            Text(w.output)
+            Text(watch.output)
               .frame(maxWidth: .infinity, alignment: .leading)
               .font(.system(.footnote, design: .monospaced))
               .textSelection(.enabled)
               .id("BOTTOM")
           }
-          .onChange(of: w.output) { _ in
+          .onChange(of: watch.output) { _ in
             proxy.scrollTo("BOTTOM", anchor: .bottom)
           }
+        }
+      } else if let watch = model.selectedExternalWatch {
+        VStack(alignment: .leading, spacing: 10) {
+          Text(watch.dir.path)
+            .lineLimit(1)
+            .truncationMode(.middle)
+
+          Text("External watch process (started outside the app).")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+
+          Text("PIDs: \(watch.pids.map(String.init).joined(separator: ", "))")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+
+          HStack(spacing: 12) {
+            Button("Stop") { model.stopExternalWatch(watch) }
+            if watch.pids.count > 1 {
+              Button("Deduplicate") { model.dedupeExternalWatch(watch) }
+            }
+            Button("Open logs folder") { model.openExternalWatchLogs(watch) }
+            Spacer()
+          }
+
+          Text("Tip: If this watch was started by ./start.sh, logs are under ~/.config/overleaf-sync/autowatch/…")
+            .font(.caption)
+            .foregroundStyle(.secondary)
         }
       } else {
         EmptyStateView(

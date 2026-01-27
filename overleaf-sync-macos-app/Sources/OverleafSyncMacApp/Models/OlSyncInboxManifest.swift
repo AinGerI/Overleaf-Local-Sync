@@ -18,8 +18,9 @@ struct OlSyncInboxManifest: Codable, Hashable {
   let projectId: String
   let batchId: String
   let localDir: String
-  let inboxDir: String
+  let inboxDir: String?
   let createdAt: String
   let changes: Changes
-}
 
+  let saved: Bool?
+}
