@@ -15,14 +15,6 @@ enum SidebarItem: String, CaseIterable, Hashable, Identifiable {
     }
   }
 
-  var titleZh: String {
-    switch self {
-    case .projects: "项目"
-    case .watches: "监听"
-    case .settings: "设置"
-    }
-  }
-
   var systemImage: String {
     switch self {
     case .projects: "folder"
@@ -40,15 +32,11 @@ struct ContentView: View {
     NavigationSplitView {
       List(selection: $sidebarSelection) {
         ForEach(SidebarItem.allCases) { item in
-          Label {
-            Text(model.ui(item.title, item.titleZh))
-          } icon: {
-            Image(systemName: item.systemImage)
-          }
+          Label(item.title, systemImage: item.systemImage)
             .tag(item)
         }
       }
-      .navigationTitle(model.ui("Overleaf Local Sync", "Overleaf 本地同步"))
+      .navigationTitle("Overleaf Local Sync")
       .listStyle(.sidebar)
     } content: {
       switch sidebarSelection {

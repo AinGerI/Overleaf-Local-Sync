@@ -28,27 +28,23 @@ struct ProjectListView: View {
     VStack(alignment: .leading, spacing: 12) {
       HStack(spacing: 12) {
         VStack(alignment: .leading, spacing: 4) {
-          Text(model.ui("Workspace (repo root)", "工作区（仓库根目录）"))
+          Text("Workspace (repo root)")
             .font(.caption)
             .foregroundStyle(.secondary)
-          Text(model.workspaceRoot?.path ?? model.ui("Not set", "未设置"))
+          Text(model.workspaceRoot?.path ?? "Not set")
             .lineLimit(1)
             .truncationMode(.middle)
         }
         Spacer()
         Menu {
-          Toggle(isOn: $showIdColumn) { Text(model.ui("ID", "ID")) }
-          Toggle(isOn: $showLocalColumn) { Text(model.ui("Local", "本地")) }
-          Toggle(isOn: $showRemoteColumn) { Text(model.ui("Remote", "远端")) }
-          Toggle(isOn: $showAccessColumn) { Text(model.ui("Access", "权限")) }
-          Toggle(isOn: $showUpdatedColumn) { Text(model.ui("Updated", "更新")) }
-          Toggle(isOn: $showByColumn) { Text(model.ui("By", "更新者")) }
+          Toggle("ID", isOn: $showIdColumn)
+          Toggle("Local", isOn: $showLocalColumn)
+          Toggle("Remote", isOn: $showRemoteColumn)
+          Toggle("Access", isOn: $showAccessColumn)
+          Toggle("Updated", isOn: $showUpdatedColumn)
+          Toggle("By", isOn: $showByColumn)
         } label: {
-          Label {
-            Text(model.ui("Columns", "列"))
-          } icon: {
-            Image(systemName: "slider.horizontal.3")
-          }
+          Label("Columns", systemImage: "slider.horizontal.3")
         }
         .fixedSize()
 
@@ -66,16 +62,12 @@ struct ProjectListView: View {
             }
           }
         } label: {
-          Label {
-            Text(model.ui("Copy all IDs", "复制全部 ID"))
-          } icon: {
-            Image(systemName: "doc.on.doc")
-          }
+          Label("Copy all IDs", systemImage: "doc.on.doc")
         }
         .tint(copiedToastToken != nil ? .green : .accentColor)
         .disabled(model.projects.isEmpty)
-        Button(model.ui("Choose…", "选择…")) { model.pickWorkspaceRoot() }
-        Button(model.ui("Refresh", "刷新")) { Task { await model.refreshProjects() } }
+        Button("Choose…") { model.pickWorkspaceRoot() }
+        Button("Refresh") { Task { await model.refreshProjects() } }
           .disabled(model.workspaceRoot == nil)
       }
       .animation(.easeInOut(duration: 0.15), value: copiedToastToken != nil)
@@ -88,19 +80,16 @@ struct ProjectListView: View {
 
       if model.workspaceRoot == nil {
         EmptyStateView(
-          title: model.ui("Choose a workspace root", "请选择工作区根目录"),
+          title: "Choose a workspace root",
           systemImage: "folder.badge.plus",
-          description: model.ui(
-            "Select the repository root that contains overleaf-sync/ol-sync.mjs.",
-            "请选择包含 overleaf-sync/ol-sync.mjs 的仓库根目录。"
-          )
+          description: "Select the repository root that contains overleaf-sync/ol-sync.mjs."
         )
       } else {
         GeometryReader { _ in
           Table(model.projects, selection: $model.selectedProjectId) {
-            TableColumn(LocalizedStringKey(model.ui("Name", "名称"))) { p in Text(p.name) }
+            TableColumn("Name") { p in Text(p.name) }
 
-            TableColumn(LocalizedStringKey(model.ui("ID", "ID"))) { p in
+            TableColumn("ID") { p in
               Text(p.id)
                 .font(.system(.caption, design: .monospaced))
                 .lineLimit(1)
@@ -113,7 +102,7 @@ struct ProjectListView: View {
               max: showIdColumn ? .infinity : 0
             )
 
-            TableColumn(LocalizedStringKey(model.ui("Local", "本地"))) { p in
+            TableColumn("Local") { p in
               if model.linkedFoldersByProjectId[p.id] != nil {
                 Image(systemName: "link")
                   .foregroundStyle(.green)
@@ -123,7 +112,7 @@ struct ProjectListView: View {
             }
             .width(min: showLocalColumn ? 44 : 0, ideal: showLocalColumn ? 56 : 0, max: showLocalColumn ? 80 : 0)
 
-            TableColumn(LocalizedStringKey(model.ui("Remote", "远端"))) { p in
+            TableColumn("Remote") { p in
               let pendingChanges = model.pendingRemoteChangeCount(for: p.id)
               if pendingChanges > 0 {
                 Text("\(pendingChanges)")
@@ -132,28 +121,23 @@ struct ProjectListView: View {
                   .padding(.horizontal, 6)
                   .padding(.vertical, 2)
                   .background(Capsule().fill(Color.orange.opacity(0.15)))
-                  .help(
-                    model.ui(
-                      "\(pendingChanges) pending remote change(s)",
-                      "有 \(pendingChanges) 处远端变更待应用"
-                    )
-                  )
+                  .help("\(pendingChanges) pending remote change(s)")
               } else {
                 Text("")
               }
             }
             .width(min: showRemoteColumn ? 60 : 0, ideal: showRemoteColumn ? 80 : 0, max: showRemoteColumn ? 120 : 0)
 
-            TableColumn(LocalizedStringKey(model.ui("Access", "权限"))) { p in Text(p.accessLevel) }
+            TableColumn("Access") { p in Text(p.accessLevel) }
               .width(min: showAccessColumn ? 60 : 0, ideal: showAccessColumn ? 70 : 0, max: showAccessColumn ? 120 : 0)
 
-            TableColumn(LocalizedStringKey(model.ui("Updated", "更新"))) { p in Text(p.lastUpdatedDisplay) }
+            TableColumn("Updated") { p in Text(p.lastUpdatedDisplay) }
               .width(min: showUpdatedColumn ? 120 : 0, ideal: showUpdatedColumn ? 140 : 0, max: showUpdatedColumn ? 220 : 0)
 
-            TableColumn(LocalizedStringKey(model.ui("By", "更新者"))) { p in Text(p.lastUpdatedBy ?? "") }
+            TableColumn("By") { p in Text(p.lastUpdatedBy ?? "") }
               .width(min: showByColumn ? 120 : 0, ideal: showByColumn ? 160 : 0, max: showByColumn ? .infinity : 0)
           }
-          .id(columnsKey + "-" + model.language.rawValue)
+          .id(columnsKey)
           .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
       }

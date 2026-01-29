@@ -9,7 +9,6 @@ enum Preferences {
     static let pullParentFolder = "pullParentFolder"
     static let autoRemoteFetchEnabled = "autoRemoteFetchEnabled"
     static let autoRemoteFetchIntervalMinutes = "autoRemoteFetchIntervalMinutes"
-    static let language = "language"
 
     static let projectsShowIdColumn = "projectsShowIdColumn"
     static let projectsShowLocalColumn = "projectsShowLocalColumn"

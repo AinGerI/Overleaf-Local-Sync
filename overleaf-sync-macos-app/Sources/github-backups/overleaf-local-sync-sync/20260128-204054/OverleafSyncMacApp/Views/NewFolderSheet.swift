@@ -9,11 +9,11 @@ struct NewFolderSheet: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 14) {
-      Text(model.ui("Create a new local project", "创建新的本地项目"))
+      Text("Create a new local project")
         .font(.title2)
         .bold()
 
-      Text(model.ui("A new folder will be created under:", "将会在以下目录下创建新文件夹："))
+      Text("A new folder will be created under:")
         .foregroundStyle(.secondary)
       Text(prompt.parent.path)
         .font(.system(.caption, design: .monospaced))
@@ -21,14 +21,14 @@ struct NewFolderSheet: View {
         .textSelection(.enabled)
 
       Form {
-        TextField(model.ui("Project name", "项目名称"), text: $name)
-        Toggle(model.ui("Start watch after create", "创建后启动监听"), isOn: $startWatch)
+        TextField("Project name", text: $name)
+        Toggle("Start watch after create", isOn: $startWatch)
       }
 
       HStack {
-        Button(model.ui("Cancel", "取消")) { model.newFolderPrompt = nil }
+        Button("Cancel") { model.newFolderPrompt = nil }
         Spacer()
-        Button(model.ui("Create", "创建")) {
+        Button("Create") {
           Task { await model.confirmCreateNewFolder(prompt, name: name, startWatchAfterCreate: startWatch) }
           model.newFolderPrompt = nil
         }

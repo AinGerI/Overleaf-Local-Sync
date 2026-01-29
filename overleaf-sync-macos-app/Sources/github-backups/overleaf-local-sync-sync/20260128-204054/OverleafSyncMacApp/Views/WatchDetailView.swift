@@ -11,7 +11,7 @@ struct WatchDetailView: View {
             .lineLimit(1)
             .truncationMode(.middle)
           Spacer()
-          Button(model.ui("Stop", "停止")) { watch.stop() }
+          Button("Stop") { watch.stop() }
             .disabled(!watch.isRunning)
         }
 
@@ -33,37 +33,32 @@ struct WatchDetailView: View {
             .lineLimit(1)
             .truncationMode(.middle)
 
-          Text(model.ui("External watch process (started outside the app).", "外部监听进程（在应用外启动）。"))
+          Text("External watch process (started outside the app).")
             .font(.caption)
             .foregroundStyle(.secondary)
 
-          Text(model.ui("PIDs: \(watch.pids.map(String.init).joined(separator: ", "))", "进程 PID：\(watch.pids.map(String.init).joined(separator: ", "))"))
+          Text("PIDs: \(watch.pids.map(String.init).joined(separator: ", "))")
             .font(.caption)
             .foregroundStyle(.secondary)
 
           HStack(spacing: 12) {
-            Button(model.ui("Stop", "停止")) { model.stopExternalWatch(watch) }
+            Button("Stop") { model.stopExternalWatch(watch) }
             if watch.pids.count > 1 {
-              Button(model.ui("Deduplicate", "去重")) { model.dedupeExternalWatch(watch) }
+              Button("Deduplicate") { model.dedupeExternalWatch(watch) }
             }
-            Button(model.ui("Open logs folder", "打开日志文件夹")) { model.openExternalWatchLogs(watch) }
+            Button("Open logs folder") { model.openExternalWatchLogs(watch) }
             Spacer()
           }
 
-          Text(
-            model.ui(
-              "Tip: If this watch was started by ./start.sh, logs are under ~/.config/overleaf-sync/autowatch/…",
-              "提示：如果这个监听是由 ./start.sh 启动的，日志在 ~/.config/overleaf-sync/autowatch/…"
-            )
-          )
+          Text("Tip: If this watch was started by ./start.sh, logs are under ~/.config/overleaf-sync/autowatch/…")
             .font(.caption)
             .foregroundStyle(.secondary)
         }
       } else {
         EmptyStateView(
-          title: model.ui("Select a watch", "请选择一个监听"),
+          title: "Select a watch",
           systemImage: "eye",
-          description: model.ui("Choose a watch from the list to view its output.", "从列表中选择一个监听以查看输出。")
+          description: "Choose a watch from the list to view its output."
         )
       }
     }

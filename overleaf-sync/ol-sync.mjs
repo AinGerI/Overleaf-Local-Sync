@@ -185,6 +185,11 @@ function usage(exitCode = 0) {
   const text = `
 Usage:
   node overleaf-sync/ol-sync.mjs projects [--base-url http://localhost] [--active-only] [--debug] [--json]
+  node overleaf-sync/ol-sync.mjs project-archive --project-id <id> [--base-url ...] [--json]
+  node overleaf-sync/ol-sync.mjs project-unarchive --project-id <id> [--base-url ...] [--json]
+  node overleaf-sync/ol-sync.mjs project-trash --project-id <id> [--base-url ...] [--json]
+  node overleaf-sync/ol-sync.mjs project-untrash --project-id <id> [--base-url ...] [--json]
+  node overleaf-sync/ol-sync.mjs project-delete --project-id <id> [--base-url ...] [--json]
   node overleaf-sync/ol-sync.mjs link --project-id <id> --dir <path> [--base-url ...] [--mongo-container mongo] [--container sharelatex] [--force]
   node overleaf-sync/ol-sync.mjs create --dir <path> [--name <projectName>] [--base-url ...] [--mongo-container mongo] [--force]
   node overleaf-sync/ol-sync.mjs pull --project-id <id> --dir <path> [--base-url ...] [--mongo-container mongo]
@@ -381,6 +386,30 @@ async function postJsonSession(url, session, jsonBody) {
   return { res, body, bodyText }
 }
 
+async function requestSession(url, session, { method, headers: extraHeaders, body } = {}) {
+  const headers = new Headers(extraHeaders || {})
+  headers.set('accept', 'application/json')
+  headers.set('x-csrf-token', session.csrfToken)
+  const cookie = session.jar.headerValue()
+  if (cookie) headers.set('cookie', cookie)
+
+  const res = await fetch(url, {
+    method: method || 'GET',
+    headers,
+    body,
+  })
+  session.jar.addFromSetCookie(res.headers.getSetCookie?.() || [])
+
+  const bodyText = await res.text()
+  let parsed
+  try {
+    parsed = bodyText ? JSON.parse(bodyText) : null
+  } catch {
+    parsed = null
+  }
+  return { res, body: parsed, bodyText }
+}
+
 async function promptLine(label) {
   if (!process.stdin.isTTY) {
     throw new Error('Cannot prompt for input: stdin is not a TTY.')
@@ -491,6 +520,65 @@ async function createProject(baseUrl, session, { projectName, template } = {}) {
     formAttempt.bodyText ||
     `HTTP ${jsonAttempt.res.status}`
   throw new Error(`Failed to create project: ${details}`.trim())
+}
+
+async function archiveProject(baseUrl, session, projectId) {
+  const { res, bodyText } = await postForm(
+    `${baseUrl}/Project/${projectId}/archive`,
+    session.jar,
+    { _csrf: session.csrfToken },
+    { 'x-csrf-token': session.csrfToken }
+  )
+  if (!res.ok) {
+    throw new Error(`Failed to archive project: HTTP ${res.status} ${bodyText}`)
+  }
+}
+
+async function unarchiveProject(baseUrl, session, projectId) {
+  const { res, bodyText } = await requestSession(
+    `${baseUrl}/Project/${projectId}/archive`,
+    session,
+    { method: 'DELETE' }
+  )
+  if (!res.ok) {
+    throw new Error(`Failed to unarchive project: HTTP ${res.status} ${bodyText}`)
+  }
+}
+
+async function trashProject(baseUrl, session, projectId) {
+  const { res, bodyText } = await postForm(
+    `${baseUrl}/project/${projectId}/trash`,
+    session.jar,
+    { _csrf: session.csrfToken },
+    { 'x-csrf-token': session.csrfToken }
+  )
+  if (!res.ok) {
+    throw new Error(`Failed to trash project: HTTP ${res.status} ${bodyText}`)
+  }
+}
+
+async function untrashProject(baseUrl, session, projectId) {
+  const { res, bodyText } = await requestSession(
+    `${baseUrl}/project/${projectId}/trash`,
+    session,
+    { method: 'DELETE' }
+  )
+  if (!res.ok) {
+    throw new Error(
+      `Failed to restore project from trash: HTTP ${res.status} ${bodyText}`
+    )
+  }
+}
+
+async function deleteProjectPermanently(baseUrl, session, projectId) {
+  const { res, bodyText } = await requestSession(
+    `${baseUrl}/Project/${projectId}`,
+    session,
+    { method: 'DELETE' }
+  )
+  if (!res.ok) {
+    throw new Error(`Failed to permanently delete project: HTTP ${res.status} ${bodyText}`)
+  }
 }
 
 function normalizeProjectId(project) {
@@ -992,6 +1080,71 @@ async function cmdProjects({ baseUrl, activeOnly, debug, json, authOpts }) {
   }
 }
 
+async function cmdProjectArchive({ baseUrl, projectId, json, authOpts }) {
+  const normalizedBaseUrl = normalizeBaseUrl(baseUrl)
+  const { session } = await ensureAuthenticated(normalizedBaseUrl, authOpts)
+  await archiveProject(normalizedBaseUrl, session, projectId)
+  if (json) {
+    process.stdout.write(
+      JSON.stringify({ ok: true, action: 'archive', projectId }) + '\n'
+    )
+  } else {
+    process.stdout.write(`Archived ${projectId}\\n`)
+  }
+}
+
+async function cmdProjectUnarchive({ baseUrl, projectId, json, authOpts }) {
+  const normalizedBaseUrl = normalizeBaseUrl(baseUrl)
+  const { session } = await ensureAuthenticated(normalizedBaseUrl, authOpts)
+  await unarchiveProject(normalizedBaseUrl, session, projectId)
+  if (json) {
+    process.stdout.write(
+      JSON.stringify({ ok: true, action: 'unarchive', projectId }) + '\n'
+    )
+  } else {
+    process.stdout.write(`Unarchived ${projectId}\\n`)
+  }
+}
+
+async function cmdProjectTrash({ baseUrl, projectId, json, authOpts }) {
+  const normalizedBaseUrl = normalizeBaseUrl(baseUrl)
+  const { session } = await ensureAuthenticated(normalizedBaseUrl, authOpts)
+  await trashProject(normalizedBaseUrl, session, projectId)
+  if (json) {
+    process.stdout.write(
+      JSON.stringify({ ok: true, action: 'trash', projectId }) + '\n'
+    )
+  } else {
+    process.stdout.write(`Trashed ${projectId}\\n`)
+  }
+}
+
+async function cmdProjectUntrash({ baseUrl, projectId, json, authOpts }) {
+  const normalizedBaseUrl = normalizeBaseUrl(baseUrl)
+  const { session } = await ensureAuthenticated(normalizedBaseUrl, authOpts)
+  await untrashProject(normalizedBaseUrl, session, projectId)
+  if (json) {
+    process.stdout.write(
+      JSON.stringify({ ok: true, action: 'untrash', projectId }) + '\n'
+    )
+  } else {
+    process.stdout.write(`Untrashed ${projectId}\\n`)
+  }
+}
+
+async function cmdProjectDelete({ baseUrl, projectId, json, authOpts }) {
+  const normalizedBaseUrl = normalizeBaseUrl(baseUrl)
+  const { session } = await ensureAuthenticated(normalizedBaseUrl, authOpts)
+  await deleteProjectPermanently(normalizedBaseUrl, session, projectId)
+  if (json) {
+    process.stdout.write(
+      JSON.stringify({ ok: true, action: 'delete', projectId }) + '\n'
+    )
+  } else {
+    process.stdout.write(`Deleted ${projectId}\\n`)
+  }
+}
+
 async function cmdPull({ baseUrl, projectId, dir, mongoContainer, authOpts }) {
   const normalizedBaseUrl = normalizeBaseUrl(baseUrl)
   const absDir = path.resolve(dir)
@@ -1490,6 +1643,51 @@ async function main() {
         baseUrl: opts['base-url'] || DEFAULT_BASE_URL,
         activeOnly: Boolean(opts['active-only']),
         debug: Boolean(opts.debug),
+        json: Boolean(opts.json),
+        authOpts: opts,
+      })
+      return
+    }
+    if (command === 'project-archive') {
+      await cmdProjectArchive({
+        baseUrl: opts['base-url'] || DEFAULT_BASE_URL,
+        projectId: mustString(opts, 'project-id'),
+        json: Boolean(opts.json),
+        authOpts: opts,
+      })
+      return
+    }
+    if (command === 'project-unarchive') {
+      await cmdProjectUnarchive({
+        baseUrl: opts['base-url'] || DEFAULT_BASE_URL,
+        projectId: mustString(opts, 'project-id'),
+        json: Boolean(opts.json),
+        authOpts: opts,
+      })
+      return
+    }
+    if (command === 'project-trash') {
+      await cmdProjectTrash({
+        baseUrl: opts['base-url'] || DEFAULT_BASE_URL,
+        projectId: mustString(opts, 'project-id'),
+        json: Boolean(opts.json),
+        authOpts: opts,
+      })
+      return
+    }
+    if (command === 'project-untrash') {
+      await cmdProjectUntrash({
+        baseUrl: opts['base-url'] || DEFAULT_BASE_URL,
+        projectId: mustString(opts, 'project-id'),
+        json: Boolean(opts.json),
+        authOpts: opts,
+      })
+      return
+    }
+    if (command === 'project-delete') {
+      await cmdProjectDelete({
+        baseUrl: opts['base-url'] || DEFAULT_BASE_URL,
+        projectId: mustString(opts, 'project-id'),
         json: Boolean(opts.json),
         authOpts: opts,
       })

@@ -6,7 +6,7 @@ struct LogView: View {
   var body: some View {
     ScrollViewReader { proxy in
       ScrollView {
-        Text(model.logText.isEmpty ? model.ui("No logs yet.", "暂无日志。") : model.logText)
+        Text(model.logText.isEmpty ? "No logs yet." : model.logText)
           .frame(maxWidth: .infinity, alignment: .leading)
           .font(.system(.footnote, design: .monospaced))
           .textSelection(.enabled)

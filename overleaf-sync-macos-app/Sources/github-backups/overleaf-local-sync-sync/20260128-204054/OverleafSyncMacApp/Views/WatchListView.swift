@@ -6,24 +6,21 @@ struct WatchListView: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
       HStack {
-        Button(model.ui("Refresh", "刷新")) { Task { await model.refreshExternalWatches() } }
-        Button(model.ui("Watch all linked", "监听全部已连接项目")) { model.startWatchAllLinkedProjects() }
+        Button("Refresh") { Task { await model.refreshExternalWatches() } }
+        Button("Watch all linked") { model.startWatchAllLinkedProjects() }
         Spacer()
       }
 
       if model.watches.isEmpty && model.externalWatches.isEmpty {
         EmptyStateView(
-          title: model.ui("No active watches", "没有正在运行的监听"),
+          title: "No active watches",
           systemImage: "eye.slash",
-          description: model.ui(
-            "Start a watch from the Projects detail pane, or run ./start.sh to auto-watch all linked folders.",
-            "你可以在“项目详情”里启动监听，或运行 ./start.sh 自动监听所有已连接的文件夹。"
-          )
+          description: "Start a watch from the Projects detail pane, or run ./start.sh to auto-watch all linked folders."
         )
       } else {
         List(selection: $model.selectedWatchSelection) {
           if !model.externalWatches.isEmpty {
-            Section {
+            Section("External") {
               ForEach(model.externalWatches) { w in
                 HStack {
                   VStack(alignment: .leading, spacing: 2) {
@@ -36,22 +33,16 @@ struct WatchListView: View {
                   }
                   Spacer()
                   let isDuplicate = w.pids.count > 1
-                  Text(
-                    isDuplicate
-                      ? model.ui("Running (\(w.pids.count))", "运行中（\(w.pids.count) 个）")
-                      : model.ui("Running", "运行中")
-                  )
+                  Text(isDuplicate ? "Running (\(w.pids.count))" : "Running")
                     .foregroundStyle(isDuplicate ? .orange : .green)
                 }
                 .tag(WatchSelection.external(w.id))
               }
-            } header: {
-              Text(model.ui("External", "外部"))
             }
           }
 
           if !model.watches.isEmpty {
-            Section {
+            Section("App") {
               ForEach(model.watches) { w in
                 HStack {
                   VStack(alignment: .leading, spacing: 2) {
@@ -63,13 +54,11 @@ struct WatchListView: View {
                       .truncationMode(.middle)
                   }
                   Spacer()
-                  Text(w.isRunning ? model.ui("Running", "运行中") : model.ui("Stopped", "已停止"))
+                  Text(w.isRunning ? "Running" : "Stopped")
                     .foregroundStyle(w.isRunning ? .green : .secondary)
                 }
                 .tag(WatchSelection.internal(w.id))
               }
-            } header: {
-              Text(model.ui("App", "应用"))
             }
           }
         }

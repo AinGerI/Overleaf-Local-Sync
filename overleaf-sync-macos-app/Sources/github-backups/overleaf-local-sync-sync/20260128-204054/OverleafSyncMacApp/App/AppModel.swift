@@ -26,10 +26,6 @@ final class AppModel: ObservableObject {
     }
   }
 
-  @Published var language: AppLanguage {
-    didSet { Preferences.setString(language.rawValue, forKey: Preferences.Key.language) }
-  }
-
   @Published var email: String {
     didSet { Preferences.setString(email, forKey: Preferences.Key.email) }
   }
@@ -102,10 +98,6 @@ final class AppModel: ObservableObject {
   init() {
     self.workspaceRoot = Preferences.getPath(forKey: Preferences.Key.workspaceRoot)
     self.baseURL = Preferences.getString(forKey: Preferences.Key.baseURL) ?? "http://localhost"
-    self.language =
-      Preferences.getString(forKey: Preferences.Key.language)
-        .flatMap(AppLanguage.init(rawValue:))
-        ?? AppLanguage.defaultForSystem()
     self.email = Preferences.getString(forKey: Preferences.Key.email) ?? ""
     self.localFolder = Preferences.getPath(forKey: Preferences.Key.localFolder)
     self.pullParentFolder = Preferences.getPath(forKey: Preferences.Key.pullParentFolder)
@@ -145,11 +137,8 @@ final class AppModel: ObservableObject {
     panel.canChooseDirectories = true
     panel.canChooseFiles = false
     panel.allowsMultipleSelection = false
-    panel.prompt = ui("Choose", "选择")
-    panel.message = ui(
-      "Choose the repository root that contains overleaf-sync/ol-sync.mjs",
-      "请选择包含 overleaf-sync/ol-sync.mjs 的仓库根目录"
-    )
+    panel.prompt = "Choose"
+    panel.message = "Choose the repository root that contains overleaf-sync/ol-sync.mjs"
     panel.directoryURL = workspaceRoot
 
     if panel.runModal() == .OK {
@@ -162,11 +151,8 @@ final class AppModel: ObservableObject {
     panel.canChooseDirectories = true
     panel.canChooseFiles = false
     panel.allowsMultipleSelection = false
-    panel.prompt = ui("Choose", "选择")
-    panel.message = ui(
-      "Choose a local project folder to link/push/watch",
-      "请选择一个本地项目文件夹用于 连接/推送/监听"
-    )
+    panel.prompt = "Choose"
+    panel.message = "Choose a local project folder to link/push/watch"
     panel.directoryURL = localFolder ?? projectsRoot ?? pullParentFolder ?? workspaceRoot
 
     if panel.runModal() == .OK {
@@ -179,11 +165,8 @@ final class AppModel: ObservableObject {
     panel.canChooseDirectories = true
     panel.canChooseFiles = false
     panel.allowsMultipleSelection = false
-    panel.prompt = ui("Choose", "选择")
-    panel.message = ui(
-      "Choose a parent folder where the project will be downloaded",
-      "请选择用于下载项目的父目录"
-    )
+    panel.prompt = "Choose"
+    panel.message = "Choose a parent folder where the project will be downloaded"
     panel.directoryURL = pullParentFolder ?? projectsRoot ?? workspaceRoot
 
     if panel.runModal() == .OK {
@@ -197,11 +180,8 @@ final class AppModel: ObservableObject {
     }
     if workspaceRoot == nil {
       alert = AlertItem(
-        title: ui("Missing workspace", "缺少工作区"),
-        message: ui(
-          "Choose the repository root first (the folder that contains overleaf-sync/ol-sync.mjs).",
-          "请先选择仓库根目录（包含 overleaf-sync/ol-sync.mjs 的文件夹）。"
-        )
+        title: "Missing workspace",
+        message: "Choose the repository root first (the folder that contains overleaf-sync/ol-sync.mjs)."
       )
       return
     }
@@ -219,11 +199,11 @@ final class AppModel: ObservableObject {
 
   // MARK: - Project management (remote + local)
 
-	  func archiveSelectedProject() async {
-	    guard let project = selectedProject else {
-	      alert = AlertItem(title: ui("Missing project", "缺少项目"), message: ui("Select a project first.", "请先选择一个项目。"))
-	      return
-	    }
+  func archiveSelectedProject() async {
+    guard let project = selectedProject else {
+      alert = AlertItem(title: "Missing project", message: "Select a project first.")
+      return
+    }
     do {
       let client = try makeClient()
       appendLog("→ project-archive \(project.id)")
@@ -239,11 +219,11 @@ final class AppModel: ObservableObject {
     }
   }
 
-	  func unarchiveSelectedProject() async {
-	    guard let project = selectedProject else {
-	      alert = AlertItem(title: ui("Missing project", "缺少项目"), message: ui("Select a project first.", "请先选择一个项目。"))
-	      return
-	    }
+  func unarchiveSelectedProject() async {
+    guard let project = selectedProject else {
+      alert = AlertItem(title: "Missing project", message: "Select a project first.")
+      return
+    }
     do {
       let client = try makeClient()
       appendLog("→ project-unarchive \(project.id)")
@@ -259,11 +239,11 @@ final class AppModel: ObservableObject {
     }
   }
 
-	  func trashSelectedProject() async {
-	    guard let project = selectedProject else {
-	      alert = AlertItem(title: ui("Missing project", "缺少项目"), message: ui("Select a project first.", "请先选择一个项目。"))
-	      return
-	    }
+  func trashSelectedProject() async {
+    guard let project = selectedProject else {
+      alert = AlertItem(title: "Missing project", message: "Select a project first.")
+      return
+    }
     do {
       let client = try makeClient()
       appendLog("→ project-trash \(project.id)")
@@ -279,11 +259,11 @@ final class AppModel: ObservableObject {
     }
   }
 
-	  func untrashSelectedProject() async {
-	    guard let project = selectedProject else {
-	      alert = AlertItem(title: ui("Missing project", "缺少项目"), message: ui("Select a project first.", "请先选择一个项目。"))
-	      return
-	    }
+  func untrashSelectedProject() async {
+    guard let project = selectedProject else {
+      alert = AlertItem(title: "Missing project", message: "Select a project first.")
+      return
+    }
     do {
       let client = try makeClient()
       appendLog("→ project-untrash \(project.id)")
@@ -299,11 +279,11 @@ final class AppModel: ObservableObject {
     }
   }
 
-	  func prepareDeleteSelectedProject() {
-	    guard let project = selectedProject else {
-	      alert = AlertItem(title: ui("Missing project", "缺少项目"), message: ui("Select a project first.", "请先选择一个项目。"))
-	      return
-	    }
+  func prepareDeleteSelectedProject() {
+    guard let project = selectedProject else {
+      alert = AlertItem(title: "Missing project", message: "Select a project first.")
+      return
+    }
     let linked = linkedFolder(for: project.id)
     let cfg = linked.flatMap { readConfig(in: $0) }
     let effectiveBase = cfg?.baseUrl ?? baseURL
@@ -330,10 +310,10 @@ final class AppModel: ObservableObject {
     let pname = prompt.projectName
     let effectiveBase = prompt.effectiveBaseURL
 
-	    if pid.isEmpty {
-	      alert = AlertItem(title: ui("Invalid project", "无效项目"), message: ui("Missing project id.", "缺少项目 ID。"))
-	      return
-	    }
+    if pid.isEmpty {
+      alert = AlertItem(title: "Invalid project", message: "Missing project id.")
+      return
+    }
 
     let linkedDir = prompt.linkedDir
 
@@ -379,18 +359,15 @@ final class AppModel: ObservableObject {
       }
 
       // 2) Local folder operation (if any)
-	      if local != .none {
-	        guard let linkedDir else {
-	          alert = AlertItem(
-	            title: ui("No local folder", "缺少本地文件夹"),
-	            message: ui(
-	              "No linked local folder found for this project. Local deletion cannot proceed.",
-	              "未找到该项目对应的已连接本地文件夹，无法执行本地删除。"
-	            )
-	          )
-	          await refreshProjects()
-	          return
-	        }
+      if local != .none {
+        guard let linkedDir else {
+          alert = AlertItem(
+            title: "No local folder",
+            message: "No linked local folder found for this project. Local deletion cannot proceed."
+          )
+          await refreshProjects()
+          return
+        }
 
         let opResult = await Task.detached { () -> (Bool, String?) in
           do {
@@ -409,14 +386,11 @@ final class AppModel: ObservableObject {
           }
         }.value
 
-	        if !opResult.0 {
-	          alert = AlertItem(
-	            title: ui("Local delete failed", "本地删除失败"),
-	            message: opResult.1 ?? ui("Unknown error", "未知错误")
-	          )
-	          await refreshProjects()
-	          return
-	        }
+        if !opResult.0 {
+          alert = AlertItem(title: "Local delete failed", message: opResult.1 ?? "Unknown error")
+          await refreshProjects()
+          return
+        }
 
         if localFolder?.standardizedFileURL == linkedDir.standardizedFileURL {
           localFolder = nil
@@ -461,25 +435,25 @@ final class AppModel: ObservableObject {
       // Refresh UI state
       await refreshProjects()
       await refreshHistoryIndexes()
-	      await refreshStorageStatus()
+      await refreshStorageStatus()
 
-	      var actions: [String] = []
-	      if cloud == .moveToTrash { actions.append(ui("cloud: moved to trash", "云端：已移到废纸篓")) }
-	      if cloud == .permanentlyDelete { actions.append(ui("cloud: permanently deleted", "云端：已永久删除")) }
-	      if local == .moveToTrash { actions.append(ui("local: moved to trash", "本地：已移到废纸篓")) }
-	      if local == .permanentlyDelete { actions.append(ui("local: permanently deleted", "本地：已永久删除")) }
-	      if deleteInbox { actions.append(ui("inbox removed", "收件箱已删除")) }
-	      if deleteBackups { actions.append(ui("backups removed", "备份已删除")) }
-	      if deleteSnapshots { actions.append(ui("snapshots removed", "快照已删除")) }
-	      if actions.isEmpty { actions.append(ui("no-op", "无操作")) }
+      var actions: [String] = []
+      if cloud == .moveToTrash { actions.append("cloud: moved to trash") }
+      if cloud == .permanentlyDelete { actions.append("cloud: permanently deleted") }
+      if local == .moveToTrash { actions.append("local: moved to trash") }
+      if local == .permanentlyDelete { actions.append("local: permanently deleted") }
+      if deleteInbox { actions.append("inbox removed") }
+      if deleteBackups { actions.append("backups removed") }
+      if deleteSnapshots { actions.append("snapshots removed") }
+      if actions.isEmpty { actions.append("no-op") }
 
-	      alert = AlertItem(
-	        title: ui("Project updated", "项目已更新"),
-	        message: "\(pname)\n" + actions.joined(separator: "\n") + "\n\n" + ui("Autowatch logs were kept.", "自动监听日志已保留。")
-	      )
-	    } catch {
-	      handleCommandError(error)
-	    }
+      alert = AlertItem(
+        title: "Project updated",
+        message: "\(pname)\n" + actions.joined(separator: "\n") + "\n\nAutowatch logs were kept."
+      )
+    } catch {
+      handleCommandError(error)
+    }
   }
 
   func login() async {
@@ -501,22 +475,19 @@ final class AppModel: ObservableObject {
 
   func linkSelectedProject() async {
     guard let project = selectedProject else {
-      alert = AlertItem(title: ui("Missing project", "缺少项目"), message: ui("Select a project first.", "请先选择一个项目。"))
+      alert = AlertItem(title: "Missing project", message: "Select a project first.")
       return
     }
     guard let dir = localFolder else {
-      alert = AlertItem(title: ui("Missing folder", "缺少文件夹"), message: ui("Choose a local folder first.", "请先选择一个本地文件夹。"))
+      alert = AlertItem(title: "Missing folder", message: "Choose a local folder first.")
       return
     }
 
     if let cfg = readConfig(in: dir) {
       if cfg.projectId == project.id {
         alert = AlertItem(
-          title: ui("Already linked", "已连接"),
-          message: ui(
-            "This folder already has \(Self.configFileName) for the selected project. Use Push/Watch.",
-            "此文件夹已包含该项目的 \(Self.configFileName)。请使用“推送/监听”。"
-          )
+          title: "Already linked",
+          message: "This folder already has \(Self.configFileName) for the selected project. Use Push/Watch."
         )
         return
       }
@@ -573,7 +544,7 @@ final class AppModel: ObservableObject {
 
   func pullSelectedProject() async {
     guard let project = selectedProject else {
-      alert = AlertItem(title: ui("Missing project", "缺少项目"), message: ui("Select a project first.", "请先选择一个项目。"))
+      alert = AlertItem(title: "Missing project", message: "Select a project first.")
       return
     }
     guard let parent = pullParentFolder else {
@@ -611,7 +582,7 @@ final class AppModel: ObservableObject {
 
   func pushLocalFolder(dryRun: Bool) async {
     guard let dir = localFolder else {
-      alert = AlertItem(title: ui("Missing folder", "缺少文件夹"), message: ui("Choose a local folder first.", "请先选择一个本地文件夹。"))
+      alert = AlertItem(title: "Missing folder", message: "Choose a local folder first.")
       return
     }
 
@@ -633,16 +604,13 @@ final class AppModel: ObservableObject {
 
   func startWatchForLocalFolder() {
     guard let dir = localFolder else {
-      alert = AlertItem(title: ui("Missing folder", "缺少文件夹"), message: ui("Choose a local folder first.", "请先选择一个本地文件夹。"))
+      alert = AlertItem(title: "Missing folder", message: "Choose a local folder first.")
       return
     }
     do {
       let didStart = try startWatch(for: dir)
       if !didStart {
-        alert = AlertItem(
-          title: ui("Already running", "已在运行"),
-          message: ui("A watch is already running for this folder.", "该文件夹已有监听在运行。")
-        )
+        alert = AlertItem(title: "Already running", message: "A watch is already running for this folder.")
       }
     } catch {
       handleCommandError(error)
@@ -653,11 +621,8 @@ final class AppModel: ObservableObject {
     let dirs = linkedFoldersByProjectId.values.sorted { $0.path < $1.path }
     if dirs.isEmpty {
       alert = AlertItem(
-        title: ui("No linked folders", "没有已连接的文件夹"),
-        message: ui(
-          "No linked local folders found under overleaf-projects. Pull or Link a project first.",
-          "在 overleaf-projects 下未找到已连接的本地文件夹。请先拉取或连接一个项目。"
-        )
+        title: "No linked folders",
+        message: "No linked local folders found under overleaf-projects. Pull or Link a project first."
       )
       return
     }
@@ -676,11 +641,8 @@ final class AppModel: ObservableObject {
     }
 
     alert = AlertItem(
-      title: ui("Watch all linked", "监听全部已连接项目"),
-      message: ui(
-        "started=\(started), alreadyRunning=\(already), failed=\(failed)",
-        "启动=\(started)，已在运行=\(already)，失败=\(failed)"
-      )
+      title: "Watch all linked",
+      message: "started=\(started), alreadyRunning=\(already), failed=\(failed)"
     )
   }
 
@@ -754,7 +716,7 @@ final class AppModel: ObservableObject {
 
   func createRemoteProjectFromLocalFolder() async {
     guard let dir = localFolder else {
-      alert = AlertItem(title: ui("Missing folder", "缺少文件夹"), message: ui("Choose a local folder first.", "请先选择一个本地文件夹。"))
+      alert = AlertItem(title: "Missing folder", message: "Choose a local folder first.")
       return
     }
 
@@ -795,7 +757,7 @@ final class AppModel: ObservableObject {
   func confirmCreateNewFolder(_ prompt: NewFolderPrompt, name: String, startWatchAfterCreate: Bool) async {
     let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
     if trimmed.isEmpty {
-      alert = AlertItem(title: ui("Missing name", "缺少名称"), message: ui("Enter a project name.", "请输入项目名称。"))
+      alert = AlertItem(title: "Missing name", message: "Enter a project name.")
       return
     }
 
@@ -871,10 +833,6 @@ final class AppModel: ObservableObject {
     return Credentials(email: email, password: password)
   }
 
-  func ui(_ en: String, _ zh: String) -> String {
-    language == .chinese ? zh : en
-  }
-
   private func appendLog(_ line: String) {
     let ts = DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .medium)
     let newLine = "[\(ts)] \(line)"
@@ -897,7 +855,7 @@ final class AppModel: ObservableObject {
       showLoginSheet = true
       return
     }
-    alert = AlertItem(title: ui("Command failed", "命令执行失败"), message: message)
+    alert = AlertItem(title: "Command failed", message: message)
   }
 
   private func configPath(in dir: URL) -> URL {
@@ -1180,17 +1138,11 @@ final class AppModel: ObservableObject {
       return toDelete
     }.value
 
-	    if candidates.isEmpty {
-	      alert = AlertItem(
-	        title: ui("No cleanup needed", "无需清理"),
-	        message: ui(
-	          "Inbox is within the keep-last-\(keepLast) limit.",
-	          "收件箱未超出保留上限（每项目保留 \(keepLast) 个）。"
-	        )
-	      )
-	      await refreshStorageStatus()
-	      return
-	    }
+    if candidates.isEmpty {
+      alert = AlertItem(title: "No cleanup needed", message: "Inbox is within the keep-last-\(keepLast) limit.")
+      await refreshStorageStatus()
+      return
+    }
 
     inboxCleanupPrompt = InboxCleanupPrompt(keepLast: keepLast, candidatePaths: candidates)
   }
@@ -1210,13 +1162,10 @@ final class AppModel: ObservableObject {
       return count
     }.value
 
-	    alert = AlertItem(
-	      title: ui("Inbox cleaned", "收件箱已清理"),
-	      message: ui(
-	        "Removed \(removed) batch folder(s). Kept last \(prompt.keepLast) per project.",
-	        "已删除 \(removed) 个批次文件夹。每项目保留最近 \(prompt.keepLast) 个。"
-	      )
-	    )
+    alert = AlertItem(
+      title: "Inbox cleaned",
+      message: "Removed \(removed) batch folder(s). Kept last \(prompt.keepLast) per project."
+    )
     await refreshStorageStatus()
   }
 
@@ -1526,17 +1475,14 @@ final class AppModel: ObservableObject {
       return toDelete
     }.value
 
-	    if candidates.isEmpty {
-	      alert = AlertItem(
-	        title: ui("No cleanup needed", "无需清理"),
-	        message: ui(
-	          "Auto snapshots are within the keep-last-\(keepLastAuto) limit.",
-	          "自动快照未超出保留上限（每项目保留 \(keepLastAuto) 个）。"
-	        )
-	      )
-	      await refreshStorageStatus()
-	      return
-	    }
+    if candidates.isEmpty {
+      alert = AlertItem(
+        title: "No cleanup needed",
+        message: "Auto snapshots are within the keep-last-\(keepLastAuto) limit."
+      )
+      await refreshStorageStatus()
+      return
+    }
 
     localSnapshotsCleanupPrompt = LocalSnapshotsCleanupPrompt(keepLastAuto: keepLastAuto, candidatePaths: candidates)
   }
@@ -1556,13 +1502,10 @@ final class AppModel: ObservableObject {
       return count
     }.value
 
-	    alert = AlertItem(
-	      title: ui("Local snapshots cleaned", "本地快照已清理"),
-	      message: ui(
-	        "Removed \(removed) auto snapshot folder(s). Kept last \(prompt.keepLastAuto) auto snapshots per project.",
-	        "已删除 \(removed) 个自动快照文件夹。每项目保留最近 \(prompt.keepLastAuto) 个自动快照。"
-	      )
-	    )
+    alert = AlertItem(
+      title: "Local snapshots cleaned",
+      message: "Removed \(removed) auto snapshot folder(s). Kept last \(prompt.keepLastAuto) auto snapshots per project."
+    )
     await refreshStorageStatus()
   }
 
@@ -1592,10 +1535,7 @@ final class AppModel: ObservableObject {
 
   func openSnapshotsFolder() {
     guard let cfg = localFolderConfig, let pid = cfg.projectId, !pid.isEmpty else {
-      alert = AlertItem(
-        title: ui("Not linked", "未连接"),
-        message: ui("Choose a linked project folder first.", "请先选择一个已连接的项目文件夹。")
-      )
+      alert = AlertItem(title: "Not linked", message: "Choose a linked project folder first.")
       return
     }
     let effectiveBase = cfg.baseUrl ?? baseURL
@@ -1609,7 +1549,7 @@ final class AppModel: ObservableObject {
 
   func openSnapshotsFolderForSelectedProject() {
     guard let pid = selectedProjectId, !pid.isEmpty else {
-      alert = AlertItem(title: ui("Missing project", "缺少项目"), message: ui("Select a project first.", "请先选择一个项目。"))
+      alert = AlertItem(title: "Missing project", message: "Select a project first.")
       return
     }
     let dir = snapshotsProjectDir(baseURL: baseURL, projectId: pid)
@@ -1618,14 +1558,11 @@ final class AppModel: ObservableObject {
 
   func saveAutoSnapshot(note: String? = nil) async {
     guard let dir = localFolder else {
-      alert = AlertItem(title: ui("Missing folder", "缺少文件夹"), message: ui("Choose a local folder first.", "请先选择一个本地文件夹。"))
+      alert = AlertItem(title: "Missing folder", message: "Choose a local folder first.")
       return
     }
     guard let cfg = localFolderConfig, let pid = cfg.projectId, !pid.isEmpty else {
-      alert = AlertItem(
-        title: ui("Not linked", "未连接"),
-        message: ui("This folder is not linked yet. Link it first.", "此文件夹尚未连接，请先进行连接。")
-      )
+      alert = AlertItem(title: "Not linked", message: "This folder is not linked yet. Link it first.")
       return
     }
     await saveSnapshot(
@@ -1641,14 +1578,11 @@ final class AppModel: ObservableObject {
 
   func savePinnedSnapshot(note: String? = nil) async {
     guard let dir = localFolder else {
-      alert = AlertItem(title: ui("Missing folder", "缺少文件夹"), message: ui("Choose a local folder first.", "请先选择一个本地文件夹。"))
+      alert = AlertItem(title: "Missing folder", message: "Choose a local folder first.")
       return
     }
     guard let cfg = localFolderConfig, let pid = cfg.projectId, !pid.isEmpty else {
-      alert = AlertItem(
-        title: ui("Not linked", "未连接"),
-        message: ui("This folder is not linked yet. Link it first.", "此文件夹尚未连接，请先进行连接。")
-      )
+      alert = AlertItem(title: "Not linked", message: "This folder is not linked yet. Link it first.")
       return
     }
     await saveSnapshot(
@@ -1664,14 +1598,11 @@ final class AppModel: ObservableObject {
 
   func saveAutoSnapshotForSelectedProject(note: String? = nil) async {
     guard let project = selectedProject else {
-      alert = AlertItem(title: ui("Missing project", "缺少项目"), message: ui("Select a project first.", "请先选择一个项目。"))
+      alert = AlertItem(title: "Missing project", message: "Select a project first.")
       return
     }
     guard let dir = linkedFolder(for: project.id) else {
-      alert = AlertItem(
-        title: ui("Not linked", "未连接"),
-        message: ui("No linked local folder found for this project.", "未找到该项目对应的已连接本地文件夹。")
-      )
+      alert = AlertItem(title: "Not linked", message: "No linked local folder found for this project.")
       return
     }
     let cfg = readConfig(in: dir)
@@ -1684,14 +1615,11 @@ final class AppModel: ObservableObject {
 
   func savePinnedSnapshotForSelectedProject(note: String? = nil) async {
     guard let project = selectedProject else {
-      alert = AlertItem(title: ui("Missing project", "缺少项目"), message: ui("Select a project first.", "请先选择一个项目。"))
+      alert = AlertItem(title: "Missing project", message: "Select a project first.")
       return
     }
     guard let dir = linkedFolder(for: project.id) else {
-      alert = AlertItem(
-        title: ui("Not linked", "未连接"),
-        message: ui("No linked local folder found for this project.", "未找到该项目对应的已连接本地文件夹。")
-      )
+      alert = AlertItem(title: "Not linked", message: "No linked local folder found for this project.")
       return
     }
     let cfg = readConfig(in: dir)
@@ -1773,19 +1701,12 @@ final class AppModel: ObservableObject {
       }
     }.value
 
-	    if result.0 {
-	      let kindEn = pinned ? "Pinned" : "Auto"
-	      let kindZh = pinned ? "置顶" : "自动"
-	      alert = AlertItem(
-	        title: ui("Snapshot saved", "快照已保存"),
-	        message: ui("\(kindEn) snapshot created at:\n\(result.1)", "\(kindZh) 快照已创建：\n\(result.1)")
-	      )
-	    } else {
-	      alert = AlertItem(
-	        title: ui("Snapshot failed", "快照创建失败"),
-	        message: result.2 ?? ui("Unknown error", "未知错误")
-	      )
-	    }
+    if result.0 {
+      let kind = pinned ? "Pinned" : "Auto"
+      alert = AlertItem(title: "Snapshot saved", message: "\(kind) snapshot created at:\n\(result.1)")
+    } else {
+      alert = AlertItem(title: "Snapshot failed", message: result.2 ?? "Unknown error")
+    }
   }
 
   private func applyLaunchArguments() {
@@ -1808,26 +1729,20 @@ final class AppModel: ObservableObject {
 
   func fetchRemoteChanges() async {
     guard let dir = localFolder else {
-      alert = AlertItem(title: ui("Missing folder", "缺少文件夹"), message: ui("Choose a local folder first.", "请先选择一个本地文件夹。"))
+      alert = AlertItem(title: "Missing folder", message: "Choose a local folder first.")
       return
     }
     guard let cfg = localFolderConfig, let pid = cfg.projectId, !pid.isEmpty else {
       alert = AlertItem(
-        title: ui("Not linked", "未连接"),
-        message: ui(
-          "This folder is not linked yet. Run Link (or Pull) to create .ol-sync.json first.",
-          "此文件夹尚未连接。请先运行“连接”（或“拉取”）来创建 .ol-sync.json。"
-        )
+        title: "Not linked",
+        message: "This folder is not linked yet. Run Link (or Pull) to create .ol-sync.json first."
       )
       return
     }
     if let selectedProjectId, selectedProjectId != pid {
       alert = AlertItem(
-        title: ui("Folder mismatch", "文件夹不匹配"),
-        message: ui(
-          "Local folder is linked to a different project. Choose the correct folder (or click Use) before fetching remote changes.",
-          "本地文件夹连接到了其他项目。请先选择正确的文件夹（或点击“使用”），再拉取远端变更。"
-        )
+        title: "Folder mismatch",
+        message: "Local folder is linked to a different project. Choose the correct folder (or click Use) before fetching remote changes."
       )
       return
     }
@@ -1849,14 +1764,11 @@ final class AppModel: ObservableObject {
       let saved = manifest.saved ?? true
       if saved, (a + m + d) > 0 {
         alert = AlertItem(
-          title: ui("Remote changes found", "发现远端变更"),
-          message: ui(
-            "added=\(a), modified=\(m), deleted=\(d)\nBatch: \(manifest.batchId)",
-            "新增=\(a)，修改=\(m)，删除=\(d)\n批次：\(manifest.batchId)"
-          )
+          title: "Remote changes found",
+          message: "added=\(a), modified=\(m), deleted=\(d)\nBatch: \(manifest.batchId)"
         )
       } else {
-        alert = AlertItem(title: ui("No remote changes", "没有远端变更"), message: ui("Remote matches local.", "远端与本地一致。"))
+        alert = AlertItem(title: "No remote changes", message: "Remote matches local.")
       }
       await refreshHistoryIndexes()
       await refreshStorageStatus()
@@ -1867,26 +1779,20 @@ final class AppModel: ObservableObject {
 
   func prepareApplyRemoteChanges() async {
     guard let dir = localFolder else {
-      alert = AlertItem(title: ui("Missing folder", "缺少文件夹"), message: ui("Choose a local folder first.", "请先选择一个本地文件夹。"))
+      alert = AlertItem(title: "Missing folder", message: "Choose a local folder first.")
       return
     }
     guard let cfg = localFolderConfig, let pid = cfg.projectId, !pid.isEmpty else {
       alert = AlertItem(
-        title: ui("Not linked", "未连接"),
-        message: ui(
-          "This folder is not linked yet. Run Link (or Pull) to create .ol-sync.json first.",
-          "此文件夹尚未连接。请先运行“连接”（或“拉取”）来创建 .ol-sync.json。"
-        )
+        title: "Not linked",
+        message: "This folder is not linked yet. Run Link (or Pull) to create .ol-sync.json first."
       )
       return
     }
     if let selectedProjectId, selectedProjectId != pid {
       alert = AlertItem(
-        title: ui("Folder mismatch", "文件夹不匹配"),
-        message: ui(
-          "Local folder is linked to a different project. Choose the correct folder (or click Use) before applying remote changes.",
-          "本地文件夹连接到了其他项目。请先选择正确的文件夹（或点击“使用”），再应用远端变更。"
-        )
+        title: "Folder mismatch",
+        message: "Local folder is linked to a different project. Choose the correct folder (or click Use) before applying remote changes."
       )
       return
     }
@@ -1907,7 +1813,7 @@ final class AppModel: ObservableObject {
       let m = manifest.changes.modified.count
       let d = manifest.changes.deleted.count
       if a == 0, m == 0, d == 0 {
-        alert = AlertItem(title: ui("No remote changes", "没有远端变更"), message: ui("Remote matches local.", "远端与本地一致。"))
+        alert = AlertItem(title: "No remote changes", message: "Remote matches local.")
         return
       }
 
@@ -1945,11 +1851,8 @@ final class AppModel: ObservableObject {
         // best-effort marker
       }
       alert = AlertItem(
-        title: ui("Applied remote changes", "已应用远端变更"),
-        message: ui(
-          "Applied added=\(prompt.added), modified=\(prompt.modified). (No local deletions.)",
-          "已应用：新增=\(prompt.added)，修改=\(prompt.modified)。（本地不会删除文件。）"
-        )
+        title: "Applied remote changes",
+        message: "Applied added=\(prompt.added), modified=\(prompt.modified). (No local deletions.)"
       )
       await refreshHistoryIndexes()
       await refreshStorageStatus()
@@ -1970,24 +1873,18 @@ final class AppModel: ObservableObject {
 
   func fetchRemoteChangesForSelectedProject(notify: Bool = true) async {
     guard let project = selectedProject else {
-      alert = AlertItem(title: ui("Missing project", "缺少项目"), message: ui("Select a project first.", "请先选择一个项目。"))
+      alert = AlertItem(title: "Missing project", message: "Select a project first.")
       return
     }
     guard let dir = linkedFolder(for: project.id) else {
-      alert = AlertItem(
-        title: ui("Not linked", "未连接"),
-        message: ui("No linked local folder found for this project.", "未找到该项目对应的已连接本地文件夹。")
-      )
+      alert = AlertItem(title: "Not linked", message: "No linked local folder found for this project.")
       return
     }
     if pendingRemoteBatchCount(for: project.id) > 0 {
       if notify {
         alert = AlertItem(
-          title: ui("Already fetched", "已拉取"),
-          message: ui(
-            "There is already a pending inbox batch for this project. Apply it first (Remote tab → Apply latest…).",
-            "该项目已存在待应用的收件箱批次。请先应用它（远端 → 应用最新…）。"
-          )
+          title: "Already fetched",
+          message: "There is already a pending inbox batch for this project. Apply it first (Remote tab → Apply latest…)."
         )
       }
       return
@@ -2015,14 +1912,11 @@ final class AppModel: ObservableObject {
         let saved = manifest.saved ?? true
         if saved, (a + m + d) > 0 {
           alert = AlertItem(
-            title: ui("Remote changes found", "发现远端变更"),
-            message: ui(
-              "added=\(a), modified=\(m), deleted=\(d)\nBatch: \(manifest.batchId)",
-              "新增=\(a)，修改=\(m)，删除=\(d)\n批次：\(manifest.batchId)"
-            )
+            title: "Remote changes found",
+            message: "added=\(a), modified=\(m), deleted=\(d)\nBatch: \(manifest.batchId)"
           )
         } else {
-          alert = AlertItem(title: ui("No remote changes", "没有远端变更"), message: ui("Remote matches local.", "远端与本地一致。"))
+          alert = AlertItem(title: "No remote changes", message: "Remote matches local.")
         }
       }
     } catch {
@@ -2032,14 +1926,11 @@ final class AppModel: ObservableObject {
 
   func prepareApplyLatestRemoteChangesForSelectedProject() async {
     guard let project = selectedProject else {
-      alert = AlertItem(title: ui("Missing project", "缺少项目"), message: ui("Select a project first.", "请先选择一个项目。"))
+      alert = AlertItem(title: "Missing project", message: "Select a project first.")
       return
     }
     guard let dir = linkedFolder(for: project.id) else {
-      alert = AlertItem(
-        title: ui("Not linked", "未连接"),
-        message: ui("No linked local folder found for this project.", "未找到该项目对应的已连接本地文件夹。")
-      )
+      alert = AlertItem(title: "Not linked", message: "No linked local folder found for this project.")
       return
     }
 
@@ -2073,7 +1964,7 @@ final class AppModel: ObservableObject {
       let d = manifest.changes.deleted.count
       let saved = manifest.saved ?? true
       if !saved || (a + m + d) == 0 {
-        alert = AlertItem(title: ui("No remote changes", "没有远端变更"), message: ui("Remote matches local.", "远端与本地一致。"))
+        alert = AlertItem(title: "No remote changes", message: "Remote matches local.")
         await refreshHistoryIndexes()
         await refreshStorageStatus()
         return
@@ -2100,10 +1991,7 @@ final class AppModel: ObservableObject {
 
   func prepareApplyInboxBatch(_ batch: RemoteInboxBatch) {
     guard let dir = linkedFolder(for: batch.projectId) else {
-      alert = AlertItem(
-        title: ui("Not linked", "未连接"),
-        message: ui("No linked local folder found for this project.", "未找到该项目对应的已连接本地文件夹。")
-      )
+      alert = AlertItem(title: "Not linked", message: "No linked local folder found for this project.")
       return
     }
     remoteApplyPrompt = RemoteApplyPrompt(
@@ -2122,10 +2010,7 @@ final class AppModel: ObservableObject {
 
   func prepareRestoreSnapshot(_ snapshot: LocalSnapshotItem) {
     guard let dir = linkedFolder(for: snapshot.projectId) else {
-      alert = AlertItem(
-        title: ui("Not linked", "未连接"),
-        message: ui("No linked local folder found for this project.", "未找到该项目对应的已连接本地文件夹。")
-      )
+      alert = AlertItem(title: "Not linked", message: "No linked local folder found for this project.")
       return
     }
     snapshotRestorePrompt = SnapshotRestorePrompt(snapshot: snapshot, targetDir: dir)
@@ -2222,17 +2107,11 @@ final class AppModel: ObservableObject {
 
     if result.0 {
       alert = AlertItem(
-        title: ui("Snapshot restored", "快照已恢复"),
-        message: ui(
-          "Restored \(result.1) file(s).\nBackup: \(backupRoot.path)",
-          "已恢复 \(result.1) 个文件。\n备份：\(backupRoot.path)"
-        )
+        title: "Snapshot restored",
+        message: "Restored \(result.1) file(s).\nBackup: \(backupRoot.path)"
       )
     } else {
-      alert = AlertItem(
-        title: ui("Restore failed", "恢复失败"),
-        message: result.2 ?? ui("Unknown error", "未知错误")
-      )
+      alert = AlertItem(title: "Restore failed", message: result.2 ?? "Unknown error")
     }
   }
 
@@ -2245,10 +2124,7 @@ final class AppModel: ObservableObject {
   func confirmMoveRootConfigAside(_ prompt: RootConfigPrompt) {
     let src = configPath(in: prompt.dir)
     guard FileManager.default.fileExists(atPath: src.path) else {
-      alert = AlertItem(
-        title: ui("Nothing to fix", "无需修复"),
-        message: ui("No .ol-sync.json found in this folder.", "此文件夹中未找到 .ol-sync.json。")
-      )
+      alert = AlertItem(title: "Nothing to fix", message: "No .ol-sync.json found in this folder.")
       return
     }
     let ts = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "")
@@ -2259,15 +2135,9 @@ final class AppModel: ObservableObject {
       appendLog("moved root config: \(src.path) -> \(dst.path)")
       reloadLocalFolderConfig()
       refreshLocalIndex()
-      alert = AlertItem(
-        title: ui("Fixed", "已修复"),
-        message: ui(
-          "Moved root .ol-sync.json to:\n\(dst.lastPathComponent)",
-          "已把根目录的 .ol-sync.json 移到：\n\(dst.lastPathComponent)"
-        )
-      )
+      alert = AlertItem(title: "Fixed", message: "Moved root .ol-sync.json to:\n\(dst.lastPathComponent)")
     } catch {
-      alert = AlertItem(title: ui("Fix failed", "修复失败"), message: (error as NSError).localizedDescription)
+      alert = AlertItem(title: "Fix failed", message: (error as NSError).localizedDescription)
     }
   }
 
