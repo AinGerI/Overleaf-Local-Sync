@@ -15,3 +15,6 @@ dist/
 # Local Overleaf projects (do NOT publish)
 overleaf-projects/
 
+
+# Generated backups (do not commit)
+overleaf-sync-macos-app/Sources/github-backups/
