@@ -1,19 +1,24 @@
 # Overleaf Local Sync (Unofficial)
 
-Local-first sync tools for a self-hosted Overleaf instance.
+Keep self-hosted Overleaf projects mapped to clear local folders.
 
-Edit your project in VS Code, Cursor, or any local editor, then push or watch changes into the Overleaf web editor. This repository includes a Node.js CLI, a lightweight cross-platform Tkinter GUI, and a native macOS SwiftUI app.
+You can keep doing final polish in the Overleaf web editor, sync those changes back into a readable local workspace, and quickly send local edits upstream again. The key goal is not just "edit locally", but making remote files and local files easy to understand and correspond to each other. This repository includes a Node.js CLI, a lightweight cross-platform Tkinter GUI, and a native macOS SwiftUI app.
 
 This project is not affiliated with Overleaf. Use it only with an Overleaf instance you own or control.
 
 ## Why this exists
 
-Overleaf is excellent for browser-based collaboration, but many writing workflows still benefit from a real local folder:
+Overleaf is excellent for browser-based collaboration, and many people still prefer to do the last round of writing, cleanup, or formatting directly in the web UI. The painful part is that remote files and local files are often hard to map cleanly, and moving edits back and forth is awkward.
+
+This project is for that gap. It gives each project a clear local folder that stays understandable on disk, while still fitting a web-first Overleaf workflow. You do not need to dig through Overleaf internals just to find the files you care about.
+
+Why that helps:
 
 - better editor ergonomics
-- AI-assisted editing in tools like Cursor
-- batch refactors and scripts
+- easier use of local tools such as VS Code, Cursor, scripts, and AI-assisted editing
+- batch refactors and local tooling
 - local backups and filesystem visibility
+- a clearer one-to-one mental model between Overleaf files and local files
 
 This project bridges that gap for self-hosted Overleaf deployments.
 
@@ -132,20 +137,25 @@ MIT. See `LICENSE`.
 
 # Overleaf Local Sync（非官方）
 
-面向自建 Overleaf 的本地优先同步工具。
+让自建 Overleaf 项目始终对应到清晰本地文件夹的同步工具。
 
-你可以在 VS Code、Cursor 或任意本地编辑器里编辑项目，再把改动推送到 Overleaf 网页端，或者直接开启监听自动上传。这个仓库同时提供 Node.js CLI、轻量级跨平台 Tkinter GUI，以及一个原生 macOS SwiftUI 应用。
+它的核心目标，不只是“支持本地编辑”，而是让自建 Overleaf 项目始终对应到一个清晰、可读、容易理解的本地文件夹。你依然可以像平时一样在 Overleaf 网页端做最后的收尾编辑，也可以随时把这些改动同步回本地；而本地编辑器中的修改，同样能很快再推回网页端。最关键的是，远端文件和本地文件之间的关系会变得直观，不需要再去 Overleaf 那些不够友好的内部目录里翻找。这个仓库同时提供 Node.js CLI、轻量级跨平台 Tkinter GUI，以及一个原生 macOS SwiftUI 应用。
 
 本项目与 Overleaf 官方无关联。请仅用于你自己拥有或可控的 Overleaf 实例。
 
 ## 为什么会有这个项目
 
-Overleaf 很适合浏览器协作，但很多写作场景依然更依赖“真实的本地文件夹”：
+Overleaf 很适合浏览器协作，而且很多人最后一轮修改、收尾、排版检查，仍然习惯直接在网页端完成。真正麻烦的是：本地文件和远端文件往往不够直观地对应，来回同步也不够顺手。
+
+这个项目就是为了解决这条缝隙。它让每个项目在本地都有一个结构清晰、磁盘上可理解的文件夹，同时又不破坏你以网页端为核心的 Overleaf 使用习惯。你不用再为了找到对应文件，去翻 Overleaf 那些不够直观的内部目录。
+
+它带来的帮助主要是：
 
 - 编辑器体验更好
-- 可以直接使用 Cursor 等 AI 工具
-- 方便批量重构和脚本处理
+- 更方便使用 VS Code、Cursor、脚本和 AI 工具
+- 方便批量重构和本地工具处理
 - 更容易做本地备份和查看文件结构
+- 让 Overleaf 文件和本地文件之间的对应关系更清楚
 
 这个项目就是为自建 Overleaf 补上这条链路。
 
