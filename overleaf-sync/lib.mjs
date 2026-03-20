@@ -85,3 +85,16 @@ export function basicAuthHeader(user, pass) {
   const token = Buffer.from(`${user}:${pass}`, 'utf8').toString('base64')
   return `Basic ${token}`
 }
+
+export function writeCliNotice(
+  message,
+  {
+    machineReadable = false,
+    stdout = process.stdout,
+    stderr = process.stderr,
+  } = {}
+) {
+  const line = `${String(message)}\n`
+  const stream = machineReadable ? stderr : stdout
+  stream.write(line)
+}

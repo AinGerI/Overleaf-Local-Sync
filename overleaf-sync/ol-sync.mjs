@@ -29,6 +29,7 @@ import {
   shouldIgnore,
   toPosix,
   basicAuthHeader,
+  writeCliNotice,
 } from './lib.mjs'
 
 const execFileAsync = promisify(execFile)
@@ -175,7 +176,9 @@ async function ensureAuthenticated(baseUrl, opts, { requireUserInfo } = {}) {
 
   if (!noSessionCache) {
     await saveCachedSession(normalized, sessionPath, session)
-    process.stdout.write(`Session cached at ${sessionPath}\\n`)
+    writeCliNotice(`Session cached at ${sessionPath}`, {
+      machineReadable: Boolean(opts?.json),
+    })
   }
 
   return { session, me, reusedSession: false, sessionPath }

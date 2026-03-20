@@ -19,8 +19,7 @@ struct OlSyncClient {
       email: email,
       password: password
     )
-    let data = Data(result.stdout.utf8)
-    return try JSONDecoder().decode([Project].self, from: data)
+    return try Self.decodeJSONPayload([Project].self, from: result, command: "projects --json")
   }
 
   func link(baseURL: String, projectId: String, dir: URL, email: String? = nil, password: String? = nil) async throws {
@@ -133,8 +132,7 @@ struct OlSyncClient {
       email: email,
       password: password
     )
-    let data = Data(result.stdout.utf8)
-    return try JSONDecoder().decode(OlSyncInboxManifest.self, from: data)
+    return try Self.decodeJSONPayload(OlSyncInboxManifest.self, from: result, command: "fetch --json")
   }
 
   func apply(
@@ -206,6 +204,28 @@ struct OlSyncClient {
     let stderr: String
   }
 
+  static func decodeJSONPayload<T: Decodable>(
+    _ type: T.Type,
+    from result: CommandResult,
+    command: String
+  ) throws -> T {
+    let decoder = JSONDecoder()
+    let normalizedStdout = result.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
+
+    do {
+      return try decoder.decode(T.self, from: Data(normalizedStdout.utf8))
+    } catch {
+      for candidate in fallbackJSONPayloads(from: result.stdout) {
+        do {
+          return try decoder.decode(T.self, from: Data(candidate.utf8))
+        } catch {
+          continue
+        }
+      }
+      throw jsonDecodeError(command: command, stdout: result.stdout, stderr: result.stderr, underlying: error)
+    }
+  }
+
   func run(args: [String], email: String?, password: String?) async throws -> CommandResult {
     let env = credentialsEnv(email: email, password: password)
     return try await ProcessRunner.run(
@@ -221,5 +241,58 @@ struct OlSyncClient {
     if let email, !email.isEmpty { env["OVERLEAF_SYNC_EMAIL"] = email }
     if let password, !password.isEmpty { env["OVERLEAF_SYNC_PASSWORD"] = password }
     return env
+  }
+
+  private static func fallbackJSONPayloads(from stdout: String) -> [String] {
+    let lines = stdout
+      .split(separator: "\n", omittingEmptySubsequences: false)
+      .map(String.init)
+    let original = stdout.trimmingCharacters(in: .whitespacesAndNewlines)
+    var candidates: [String] = []
+
+    for index in lines.indices {
+      let trimmed = lines[index].trimmingCharacters(in: .whitespacesAndNewlines)
+      guard trimmed.hasPrefix("{") || trimmed.hasPrefix("[") else { continue }
+      let candidate = lines[index...]
+        .joined(separator: "\n")
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+      guard !candidate.isEmpty, candidate != original, !candidates.contains(candidate) else { continue }
+      candidates.append(candidate)
+    }
+
+    return candidates
+  }
+
+  private static func jsonDecodeError(
+    command: String,
+    stdout: String,
+    stderr: String,
+    underlying: Error
+  ) -> NSError {
+    var lines = ["Failed to decode JSON output from \(command)."]
+    let stdoutPreview = outputPreview(stdout)
+    let stderrPreview = outputPreview(stderr)
+    if !stdoutPreview.isEmpty {
+      lines.append("stdout: \(stdoutPreview)")
+    }
+    if !stderrPreview.isEmpty {
+      lines.append("stderr: \(stderrPreview)")
+    }
+    lines.append("underlying: \((underlying as NSError).localizedDescription)")
+    return NSError(
+      domain: "OlSyncClient",
+      code: 3,
+      userInfo: [NSLocalizedDescriptionKey: lines.joined(separator: "\n")]
+    )
+  }
+
+  private static func outputPreview(_ text: String, limit: Int = 240) -> String {
+    let normalized = text
+      .replacingOccurrences(of: "\r\n", with: "\n")
+      .replacingOccurrences(of: "\n", with: " \\n ")
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !normalized.isEmpty else { return "" }
+    guard normalized.count > limit else { return normalized }
+    return String(normalized.prefix(limit)) + "..."
   }
 }

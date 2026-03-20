@@ -13,6 +13,7 @@ import {
   extractCsrfToken,
   shouldIgnore,
   toPosix,
+  writeCliNotice,
 } from '../lib.mjs'
 
 // Minimal regression tests for parsing helpers used by overleaf-sync/ol-sync.mjs
@@ -84,4 +85,32 @@ test('shouldIgnore respects default ignore lists', () => {
 test('basicAuthHeader encodes credentials', () => {
   const header = basicAuthHeader('user', 'pass')
   assert.equal(header, 'Basic dXNlcjpwYXNz')
+})
+
+test('writeCliNotice keeps machine-readable stdout clean', () => {
+  const stdout = { chunks: [], write(chunk) { this.chunks.push(String(chunk)) } }
+  const stderr = { chunks: [], write(chunk) { this.chunks.push(String(chunk)) } }
+
+  writeCliNotice('Session cached at /tmp/session.json', {
+    machineReadable: true,
+    stdout,
+    stderr,
+  })
+
+  assert.deepEqual(stdout.chunks, [])
+  assert.deepEqual(stderr.chunks, ['Session cached at /tmp/session.json\n'])
+})
+
+test('writeCliNotice uses stdout for normal interactive notices', () => {
+  const stdout = { chunks: [], write(chunk) { this.chunks.push(String(chunk)) } }
+  const stderr = { chunks: [], write(chunk) { this.chunks.push(String(chunk)) } }
+
+  writeCliNotice('Session cached at /tmp/session.json', {
+    machineReadable: false,
+    stdout,
+    stderr,
+  })
+
+  assert.deepEqual(stdout.chunks, ['Session cached at /tmp/session.json\n'])
+  assert.deepEqual(stderr.chunks, [])
 })
